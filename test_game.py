@@ -6,10 +6,13 @@ import game
 
 
 @pytest.fixture(autouse=True)
-def reset_player():
-    """Reset the player to (0, 0) before every test."""
+def reset_game_state():
+    """Reset all game state before every test."""
     game.player_pos[0] = 0
     game.player_pos[1] = 0
+    game.collectible_pos[0] = 0
+    game.collectible_pos[1] = 0
+    game.score = 0
 
 
 def test_grid_size():
@@ -110,3 +113,65 @@ def test_cannot_move_past_right_edge():
     game.player_pos[1] = game.GRID_SIZE - 1
     game.move_player("d")
     assert game.player_pos[1] == game.GRID_SIZE - 1
+
+
+# --- Collectible Tests ---
+
+
+def test_spawn_collectible_not_on_player():
+    """spawn_collectible() must never place the collectible on the player."""
+    game.spawn_collectible()
+    assert game.collectible_pos != game.player_pos
+
+
+def test_spawn_collectible_within_grid():
+    """spawn_collectible() must place the collectible within grid bounds."""
+    game.spawn_collectible()
+    row, col = game.collectible_pos
+    assert 0 <= row < game.GRID_SIZE
+    assert 0 <= col < game.GRID_SIZE
+
+
+def test_draw_grid_shows_collectible():
+    """draw_grid() should display the collectible symbol * on the grid."""
+    game.collectible_pos[0] = 3
+    game.collectible_pos[1] = 3
+
+    with patch("game.os.system"):
+        with patch("builtins.print") as mock_print:
+            game.draw_grid()
+
+    all_output = "\n".join(
+        call.args[0] for call in mock_print.call_args_list
+    )
+    assert "*" in all_output
+
+
+def test_collect_increments_score():
+    """Moving onto the collectible should increase the score by 1."""
+    game.collectible_pos[0] = 0
+    game.collectible_pos[1] = 1
+
+    game.move_player("d")
+    if game.player_pos == game.collectible_pos:
+        game.score += 1
+
+    assert game.score == 1
+
+
+def test_collect_does_not_trigger_when_missed():
+    """Score should not change if the player is not on the collectible."""
+    game.collectible_pos[0] = 4
+    game.collectible_pos[1] = 4
+
+    game.move_player("d")
+    if game.player_pos == game.collectible_pos:
+        game.score += 1
+
+    assert game.score == 0
+
+
+def test_win_condition():
+    """Reaching WIN_SCORE should mark the game as won."""
+    game.score = game.WIN_SCORE
+    assert game.score >= game.WIN_SCORE

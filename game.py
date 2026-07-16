@@ -1,11 +1,26 @@
 import os
+import random
 
 # --- Constants ---
 GRID_SIZE = 5
+WIN_SCORE = 10
 
 # --- Player State ---
 # We use (row, col) so (0, 0) means top-left corner
 player_pos = [0, 0]
+collectible_pos = [0, 0]
+score = 0
+
+
+def spawn_collectible():
+    """Place the collectible at a random position that is not the player's."""
+    while True:
+        row = random.randint(0, GRID_SIZE - 1)
+        col = random.randint(0, GRID_SIZE - 1)
+        if [row, col] != player_pos:
+            collectible_pos[0] = row
+            collectible_pos[1] = col
+            break
 
 
 def move_player(direction: str):
@@ -37,6 +52,8 @@ def draw_grid():
         for col in range(GRID_SIZE):
             if row == player_pos[0] and col == player_pos[1]:
                 cells.append("@")
+            elif row == collectible_pos[0] and col == collectible_pos[1]:
+                cells.append("*")
             else:
                 cells.append(".")
         print("  ".join(cells))
@@ -44,9 +61,14 @@ def draw_grid():
 
 def main():
     """Main game loop."""
+    global score
+
+    spawn_collectible()
+
     while True:
         draw_grid()
-        print("\nMoves: W (up), A (left), S (down), D (right), Q (quit)")
+        print(f"\nScore: {score}/{WIN_SCORE}")
+        print("Moves: W (up), A (left), S (down), D (right), Q (quit)")
 
         action = input("Your move: ").strip().lower()
 
@@ -55,6 +77,15 @@ def main():
             break
         elif action in ("w", "a", "s", "d"):
             move_player(action)
+
+            if player_pos == collectible_pos:
+                score += 1
+                if score >= WIN_SCORE:
+                    draw_grid()
+                    print(f"\nScore: {score}/{WIN_SCORE}")
+                    print("You win!")
+                    break
+                spawn_collectible()
 
 
 if __name__ == "__main__":
