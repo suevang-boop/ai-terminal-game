@@ -12,6 +12,8 @@ def reset_game_state():
     game.player_pos[1] = 0
     game.collectible_pos[0] = 0
     game.collectible_pos[1] = 0
+    game.hazard_pos[0] = 0
+    game.hazard_pos[1] = 0
     game.score = 0
 
 
@@ -175,3 +177,87 @@ def test_win_condition():
     """Reaching WIN_SCORE should mark the game as won."""
     game.score = game.WIN_SCORE
     assert game.score >= game.WIN_SCORE
+
+
+# --- Hazard Tests ---
+
+
+def test_spawn_hazard_not_on_player():
+    """spawn_hazard() must never place the hazard on the player."""
+    game.spawn_hazard()
+    assert game.hazard_pos != game.player_pos
+
+
+def test_spawn_hazard_not_on_collectible():
+    """spawn_hazard() must never overlap the collectible."""
+    game.collectible_pos[0] = 2
+    game.collectible_pos[1] = 3
+    game.spawn_hazard()
+    assert game.hazard_pos != game.collectible_pos
+
+
+def test_spawn_hazard_within_grid():
+    """spawn_hazard() must stay within grid bounds."""
+    game.spawn_hazard()
+    row, col = game.hazard_pos
+    assert 0 <= row < game.GRID_SIZE
+    assert 0 <= col < game.GRID_SIZE
+
+
+@patch("game.os.system")
+def test_draw_grid_shows_hazard(mock_system):
+    """draw_grid() should display the hazard symbol X on the grid."""
+    game.hazard_pos[0] = 2
+    game.hazard_pos[1] = 2
+
+    with patch("builtins.print") as mock_print:
+        game.draw_grid()
+
+    all_output = "\n".join(
+        call.args[0] for call in mock_print.call_args_list
+    )
+    assert "X" in all_output
+
+
+def test_hazard_terminates_round():
+    """Moving onto the hazard should end the round (hazard check triggers)."""
+    game.hazard_pos[0] = 0
+    game.hazard_pos[1] = 1
+
+    game.move_player("d")
+    assert game.player_pos == game.hazard_pos
+
+
+# --- Reset Tests ---
+
+
+def test_reset_game_resets_player():
+    """reset_game() should move the player back to (0, 0)."""
+    game.player_pos[0] = 3
+    game.player_pos[1] = 4
+    game.reset_game()
+    assert game.player_pos == [0, 0]
+
+
+def test_reset_game_resets_score():
+    """reset_game() should set the score back to 0."""
+    game.score = 99
+    game.reset_game()
+    assert game.score == 0
+
+
+def test_reset_game_spawns_items():
+    """reset_game() should place collectible and hazard on valid, non-overlapping positions."""
+    game.reset_game()
+
+    cr, cc = game.collectible_pos
+    hr, hc = game.hazard_pos
+
+    # Both within grid
+    assert 0 <= cr < game.GRID_SIZE and 0 <= cc < game.GRID_SIZE
+    assert 0 <= hr < game.GRID_SIZE and 0 <= hc < game.GRID_SIZE
+
+    # None overlap with each other or the player
+    assert game.collectible_pos != game.hazard_pos
+    assert game.collectible_pos != game.player_pos
+    assert game.hazard_pos != game.player_pos

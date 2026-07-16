@@ -5,11 +5,21 @@ import random
 GRID_SIZE = 5
 WIN_SCORE = 10
 
-# --- Player State ---
-# We use (row, col) so (0, 0) means top-left corner
+# --- Game State ---
 player_pos = [0, 0]
 collectible_pos = [0, 0]
+hazard_pos = [0, 0]
 score = 0
+
+
+def reset_game():
+    """Reset all game state for a fresh round."""
+    global score
+    player_pos[0] = 0
+    player_pos[1] = 0
+    score = 0
+    spawn_collectible()
+    spawn_hazard()
 
 
 def spawn_collectible():
@@ -17,9 +27,20 @@ def spawn_collectible():
     while True:
         row = random.randint(0, GRID_SIZE - 1)
         col = random.randint(0, GRID_SIZE - 1)
-        if [row, col] != player_pos:
+        if [row, col] != player_pos and [row, col] != hazard_pos:
             collectible_pos[0] = row
             collectible_pos[1] = col
+            break
+
+
+def spawn_hazard():
+    """Place the hazard at a random empty position on the grid."""
+    while True:
+        row = random.randint(0, GRID_SIZE - 1)
+        col = random.randint(0, GRID_SIZE - 1)
+        if [row, col] != player_pos and [row, col] != collectible_pos:
+            hazard_pos[0] = row
+            hazard_pos[1] = col
             break
 
 
@@ -38,14 +59,12 @@ def move_player(direction: str):
 
 
 def draw_grid():
-    """Draws a 5x5 grid with the player marked as @."""
-    os.system("clear")  # Clears the terminal so the grid redraws fresh
+    """Draw the 5x5 grid with player (@), collectible (*), and hazard (X)."""
+    os.system("clear")
 
-    # Print column numbers across the top for reference
     print("    " + "  ".join(str(i) for i in range(GRID_SIZE)))
 
     for row in range(GRID_SIZE):
-        # Print row number on the left side
         print(f" {row} ", end="")
 
         cells = []
@@ -54,16 +73,17 @@ def draw_grid():
                 cells.append("@")
             elif row == collectible_pos[0] and col == collectible_pos[1]:
                 cells.append("*")
+            elif row == hazard_pos[0] and col == hazard_pos[1]:
+                cells.append("X")
             else:
                 cells.append(".")
         print("  ".join(cells))
 
 
-def main():
-    """Main game loop."""
+def play_round():
+    """Run a single round. Returns True if the player wants to play again."""
     global score
-
-    spawn_collectible()
+    reset_game()
 
     while True:
         draw_grid()
@@ -73,10 +93,15 @@ def main():
         action = input("Your move: ").strip().lower()
 
         if action == "q":
-            print("Goodbye!")
-            break
-        elif action in ("w", "a", "s", "d"):
+            return False
+
+        if action in ("w", "a", "s", "d"):
             move_player(action)
+
+            if player_pos == hazard_pos:
+                draw_grid()
+                print("\nGame Over!")
+                break
 
             if player_pos == collectible_pos:
                 score += 1
@@ -86,6 +111,16 @@ def main():
                     print("You win!")
                     break
                 spawn_collectible()
+
+    print("\nPlay again? (y/n)")
+    return input("> ").strip().lower() == "y"
+
+
+def main():
+    """Top-level game loop: keeps starting new rounds until the player quits."""
+    while play_round():
+        pass
+    print("Goodbye!")
 
 
 if __name__ == "__main__":
