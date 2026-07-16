@@ -8,6 +8,20 @@ GRID_SIZE = 5
 player_pos = [0, 0]
 
 
+def move_player(direction: str):
+    """Move the player one cell in the given direction, respecting grid boundaries."""
+    row, col = player_pos
+
+    if direction == "w" and row > 0:
+        player_pos[0] = row - 1
+    elif direction == "s" and row < GRID_SIZE - 1:
+        player_pos[0] = row + 1
+    elif direction == "a" and col > 0:
+        player_pos[1] = col - 1
+    elif direction == "d" and col < GRID_SIZE - 1:
+        player_pos[1] = col + 1
+
+
 def draw_grid():
     """Draws a 5x5 grid with the player marked as @."""
     os.system("clear")  # Clears the terminal so the grid redraws fresh
@@ -39,9 +53,8 @@ def main():
         if action == "q":
             print("Goodbye!")
             break
-        else:
-            print("That's not a valid move! Press Enter to continue...")
-            input()
+        elif action in ("w", "a", "s", "d"):
+            move_player(action)
 
 
 if __name__ == "__main__":

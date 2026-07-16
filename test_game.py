@@ -1,6 +1,15 @@
 from unittest.mock import patch
 
+import pytest
+
 import game
+
+
+@pytest.fixture(autouse=True)
+def reset_player():
+    """Reset the player to (0, 0) before every test."""
+    game.player_pos[0] = 0
+    game.player_pos[1] = 0
 
 
 def test_grid_size():
@@ -46,3 +55,58 @@ def test_draw_grid_dimensions(mock_system):
             printed_rows.append(line)
 
     assert len(printed_rows) == game.GRID_SIZE
+
+
+# --- Movement Tests ---
+
+
+def test_move_right():
+    """D should move the player one column to the right."""
+    game.move_player("d")
+    assert game.player_pos == [0, 1]
+
+
+def test_move_left():
+    """A should move the player one column to the left."""
+    game.player_pos[1] = 2
+    game.move_player("a")
+    assert game.player_pos == [0, 1]
+
+
+def test_move_down():
+    """S should move the player one row down."""
+    game.move_player("s")
+    assert game.player_pos == [1, 0]
+
+
+def test_move_up():
+    """W should move the player one row up."""
+    game.player_pos[0] = 2
+    game.move_player("w")
+    assert game.player_pos == [1, 0]
+
+
+def test_cannot_move_past_top_edge():
+    """W at row 0 should not change position."""
+    game.move_player("w")
+    assert game.player_pos == [0, 0]
+
+
+def test_cannot_move_past_left_edge():
+    """A at col 0 should not change position."""
+    game.move_player("a")
+    assert game.player_pos == [0, 0]
+
+
+def test_cannot_move_past_bottom_edge():
+    """S at the bottom row should not change position."""
+    game.player_pos[0] = game.GRID_SIZE - 1
+    game.move_player("s")
+    assert game.player_pos[0] == game.GRID_SIZE - 1
+
+
+def test_cannot_move_past_right_edge():
+    """D at the rightmost column should not change position."""
+    game.player_pos[1] = game.GRID_SIZE - 1
+    game.move_player("d")
+    assert game.player_pos[1] == game.GRID_SIZE - 1
