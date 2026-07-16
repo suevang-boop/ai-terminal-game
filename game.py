@@ -5,11 +5,30 @@ import random
 GRID_SIZE = 5
 WIN_SCORE = 10
 
+# --- Theme ---
+GAME_NAME = "Space Rocks"
+STORY_INTRO = "Your Spaceship is flying through space collecting rock samples"
+PLAYER_ICON = "\U0001f680"     # 🚀
+COLLECTIBLE_ICON = "\U0001faa8"  # 🪨
+HAZARD_ICON = "\u2604\ufe0f"    # ☄️
+WIN_MESSAGE = "You have collected all the samples!"
+LOSE_MESSAGE = "Your spaceship is damaged and unable to continue!"
+
 # --- Game State ---
 player_pos = [0, 0]
 collectible_pos = [0, 0]
 hazard_pos = [0, 0]
 score = 0
+
+
+def show_intro():
+    """Display the game title and story intro at startup."""
+    os.system("clear")
+    print(f"\n  === {GAME_NAME} ===\n")
+    print(f"  {STORY_INTRO}\n")
+    print(f"  Collect {WIN_SCORE} {COLLECTIBLE_ICON} while avoiding {HAZARD_ICON}")
+    print(f"  Use WASD to move, Q to quit\n")
+    input("  Press Enter to start... ")
 
 
 def reset_game():
@@ -59,8 +78,10 @@ def move_player(direction: str):
 
 
 def draw_grid():
-    """Draw the 5x5 grid with player (@), collectible (*), and hazard (X)."""
+    """Draw the 5x5 grid with themed icons."""
     os.system("clear")
+
+    print(f"  --- {GAME_NAME} ---\n")
 
     print("    " + "  ".join(str(i) for i in range(GRID_SIZE)))
 
@@ -70,13 +91,13 @@ def draw_grid():
         cells = []
         for col in range(GRID_SIZE):
             if row == player_pos[0] and col == player_pos[1]:
-                cells.append("@")
+                cells.append(PLAYER_ICON)
             elif row == collectible_pos[0] and col == collectible_pos[1]:
-                cells.append("*")
+                cells.append(COLLECTIBLE_ICON)
             elif row == hazard_pos[0] and col == hazard_pos[1]:
-                cells.append("X")
+                cells.append(HAZARD_ICON)
             else:
-                cells.append(".")
+                cells.append("·")
         print("  ".join(cells))
 
 
@@ -87,10 +108,10 @@ def play_round():
 
     while True:
         draw_grid()
-        print(f"\nScore: {score}/{WIN_SCORE}")
-        print("Moves: W (up), A (left), S (down), D (right), Q (quit)")
+        print(f"\n  Score: {score}/{WIN_SCORE}")
+        print("  W (up)  A (left)  S (down)  D (right)  Q (quit)")
 
-        action = input("Your move: ").strip().lower()
+        action = input("\n  Your move: ").strip().lower()
 
         if action == "q":
             return False
@@ -100,27 +121,28 @@ def play_round():
 
             if player_pos == hazard_pos:
                 draw_grid()
-                print("\nGame Over!")
+                print(f"\n  {LOSE_MESSAGE}")
                 break
 
             if player_pos == collectible_pos:
                 score += 1
                 if score >= WIN_SCORE:
                     draw_grid()
-                    print(f"\nScore: {score}/{WIN_SCORE}")
-                    print("You win!")
+                    print(f"\n  Score: {score}/{WIN_SCORE}")
+                    print(f"\n  {WIN_MESSAGE}")
                     break
                 spawn_collectible()
 
-    print("\nPlay again? (y/n)")
-    return input("> ").strip().lower() == "y"
+    print("\n  Play again? (y/n)")
+    return input("  > ").strip().lower() == "y"
 
 
 def main():
     """Top-level game loop: keeps starting new rounds until the player quits."""
+    show_intro()
     while play_round():
         pass
-    print("Goodbye!")
+    print(f"\n  Thanks for playing {GAME_NAME}!\n")
 
 
 if __name__ == "__main__":

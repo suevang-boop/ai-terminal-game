@@ -29,7 +29,7 @@ def test_player_starts_at_origin():
 
 @patch("game.os.system")
 def test_draw_grid_contains_player(mock_system):
-    """draw_grid() should place the player symbol @ at (0, 0)."""
+    """draw_grid() should place the player icon on the grid."""
     with patch("builtins.print") as mock_print:
         game.draw_grid()
 
@@ -38,8 +38,8 @@ def test_draw_grid_contains_player(mock_system):
         call.args[0] for call in mock_print.call_args_list
     )
 
-    # The @ symbol must appear in the output
-    assert "@" in all_output
+    # The player icon must appear in the output
+    assert game.PLAYER_ICON in all_output
 
 
 @patch("game.os.system")
@@ -135,7 +135,7 @@ def test_spawn_collectible_within_grid():
 
 
 def test_draw_grid_shows_collectible():
-    """draw_grid() should display the collectible symbol * on the grid."""
+    """draw_grid() should display the collectible icon on the grid."""
     game.collectible_pos[0] = 3
     game.collectible_pos[1] = 3
 
@@ -146,7 +146,7 @@ def test_draw_grid_shows_collectible():
     all_output = "\n".join(
         call.args[0] for call in mock_print.call_args_list
     )
-    assert "*" in all_output
+    assert game.COLLECTIBLE_ICON in all_output
 
 
 def test_collect_increments_score():
@@ -206,7 +206,7 @@ def test_spawn_hazard_within_grid():
 
 @patch("game.os.system")
 def test_draw_grid_shows_hazard(mock_system):
-    """draw_grid() should display the hazard symbol X on the grid."""
+    """draw_grid() should display the hazard icon on the grid."""
     game.hazard_pos[0] = 2
     game.hazard_pos[1] = 2
 
@@ -216,7 +216,7 @@ def test_draw_grid_shows_hazard(mock_system):
     all_output = "\n".join(
         call.args[0] for call in mock_print.call_args_list
     )
-    assert "X" in all_output
+    assert game.HAZARD_ICON in all_output
 
 
 def test_hazard_terminates_round():
