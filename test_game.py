@@ -261,3 +261,64 @@ def test_reset_game_spawns_items():
     assert game.collectible_pos != game.hazard_pos
     assert game.collectible_pos != game.player_pos
     assert game.hazard_pos != game.player_pos
+
+
+# --- Theme Tests ---
+
+
+def test_game_name():
+    """The game name should be set."""
+    assert game.GAME_NAME == "Space Rocks"
+
+
+def test_story_intro():
+    """The story intro should describe the game."""
+    assert "Spaceship" in game.STORY_INTRO
+
+
+def test_win_message():
+    """Win message should mention samples."""
+    assert "samples" in game.WIN_MESSAGE
+
+
+def test_lose_message():
+    """Lose message should mention the spaceship."""
+    assert "spaceship" in game.LOSE_MESSAGE.lower()
+
+
+@patch("game.os.system")
+@patch("builtins.print")
+@patch("builtins.input", return_value="")
+def test_show_intro_displays_game_name(mock_input, mock_print, mock_system):
+    """show_intro() should print the game name."""
+    game.show_intro()
+
+    all_output = "\n".join(
+        call.args[0] for call in mock_print.call_args_list
+    )
+    assert game.GAME_NAME in all_output
+
+
+@patch("game.os.system")
+@patch("builtins.print")
+@patch("builtins.input", return_value="")
+def test_show_intro_displays_story(mock_input, mock_print, mock_system):
+    """show_intro() should print the story intro."""
+    game.show_intro()
+
+    all_output = "\n".join(
+        call.args[0] for call in mock_print.call_args_list
+    )
+    assert game.STORY_INTRO in all_output
+
+
+@patch("game.os.system")
+def test_draw_grid_shows_game_name(mock_system):
+    """draw_grid() should display the game name header."""
+    with patch("builtins.print") as mock_print:
+        game.draw_grid()
+
+    all_output = "\n".join(
+        call.args[0] for call in mock_print.call_args_list
+    )
+    assert game.GAME_NAME in all_output
