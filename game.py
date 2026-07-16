@@ -77,6 +77,32 @@ def move_player(direction: str):
         player_pos[1] = col + 1
 
 
+def move_hazard():
+    """Move the hazard one cell in a random valid direction, or stay put."""
+    row, col = hazard_pos
+    directions = []
+
+    if row > 0:
+        directions.append((-1, 0))
+    if row < GRID_SIZE - 1:
+        directions.append((1, 0))
+    if col > 0:
+        directions.append((0, -1))
+    if col < GRID_SIZE - 1:
+        directions.append((0, 1))
+
+    # Include staying put as an option
+    directions.append((0, 0))
+
+    dr, dc = random.choice(directions)
+    new_row, new_col = row + dr, col + dc
+
+    # Only move if the target is not occupied by the player or collectible
+    if [new_row, new_col] != player_pos and [new_row, new_col] != collectible_pos:
+        hazard_pos[0] = new_row
+        hazard_pos[1] = new_col
+
+
 def draw_grid():
     """Draw the 5x5 grid with themed icons."""
     os.system("clear")
@@ -118,6 +144,7 @@ def play_round():
 
         if action in ("w", "a", "s", "d"):
             move_player(action)
+            move_hazard()
 
             if player_pos == hazard_pos:
                 draw_grid()
